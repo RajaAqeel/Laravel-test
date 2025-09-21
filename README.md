@@ -1,30 +1,96 @@
-# Hybrid Interview
+# Laravel Test Assessment – Hybrid Mediaworks
 
-## Time
-The alloted time frame for this task is 2 days.
+This repository contains the implementation for the **Laravel Test Assessment**.  
+All feature requirements were implemented and verified with PHPUnit.
 
-## Your Goal
-Your goal is to get all the tests to pass within your allotted time frame. The only rules is that you **can't** modify anything in the `tests` directory or any factories. Feel free to use any resources you would usually use, including Stack Overflow.
+---
 
-You'll also need to complete a few other TODOs in the code. Most IDEs should pick this up; if you're using emacs or vim you might find it easier to use `grep -R TODO` in both the `database` and `app` directories.
+## 📌 Project Setup
 
-Good luck!
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/adeellaradev/Laravel-test
+   cd Laravel-test
+   ````
+2. **Install dependencies**
+    ````bash
+    composer install
+    ````
+3. **Copy environment file and configure database**
+    ````bash
+    cp .env.example .env
+    # Edit DB_CONNECTION, DB_DATABASE, etc.
+    ````
+4. **Generate app key**
+    ````bash
+    php artisan key:generate
+    ````
+5. **Run migrations**
+    ````bash
+    php artisan migrate --seed
+    ````
+6. **Run tests**
+    ````bash
+    php artisan test
+    ````
+    
+## 🚀 Implementation Summary
+1. **Ran all tests**
+   * Ran all tests to find out the requirements and what to develop.
+   * Also understood the flow and how to do the implementation.
+2. **Created and completed all Service classes**
+    * MerchantService → create/update merchant, find by email, payout unpaid orders.
+    * AffiliateService → register new affiliates linked to merchants.
+    * OrderService → process incoming orders, handle duplicate order IDs, register affiliates if needed.
 
-## Blueprint
-You'll need to complete the following files:
+3. **Implemented Order Webhook flow**
+    * Added WebhookController with validation and JSON responses.
+    * Integrated OrderService for processing validated payloads.
 
-* `app/Services/MerchantService.php`
-* `app/Services/AffiliateService.php`
-* `app/Services/OrderService.php`
-* `app/Jobs/PayoutOrderJob.php`
-* `app/Http/Controllers/WebhookController.php`
-* `app/Http/Controllers/MerchantController.php`
-* `database/migrations/2022_05_13_220658_create_affiliates_table.php`
-* `database/migrations/2022_05_16_143445_create_orders_table.php`
+4. **Built PayoutOrderJob**
+    * Used ApiService to send payouts for order commissions.
+    * Wrapped in a DB transaction to ensure rollback on failure.
 
-## Getting started
-You don't need to worry about a frontend, and we're using SQLite for simplicity. All you need to do is install the composer dependencies and you can get started. Feel free to refer to the tests if you need help understanding how a method should operate.
+5. **Implemented ApiService::sendPayout() for API integration**
 
-## Submitting the Test
-Create a public repository and push your code into it and then share the link to that repo make sure the repo is public and accessible.
+6. **Completed MerchantController::orderStats**
+    * Returned {count, revenue, commissions_owed} for orders in a date range.
 
+7. **Fixed issues**
+    * Added missing columns (external_order_id) via migrations.
+    * Correctly returned affiliate instances in OrderService.
+    * Returned proper JSON from controllers (->json()).
+
+## 🧪 Running Tests
+1. **Run the full test suite**
+    ````bash
+    php artisan test
+    ````
+2. **Run a specific group**
+    ````bash
+    php artisan test --filter=OrderService
+    php artisan test --filter=PayoutOrderJob
+    php artisan test --filter=MerchantHttpTest
+    ````
+    * All tests have been passed.
+
+## 📂 Project Structure
+* app/Services – Business logic (MerchantService, AffiliateService, OrderService, ApiService)
+* app/Jobs/PayoutOrderJob.php – Handles payouts with rollback on failure.
+* app/Http/Controllers – WebhookController, MerchantController.
+* database/migrations – Database schema.
+* tests/Feature – Feature tests for services, controllers, jobs.
+* tests/Unit – Example unit test.
+
+## 💡 Notes
+* The project uses SQLite (default for testing).
+* Controllers return JSON responses only.
+* Jobs and services are fully covered by feature tests.
+
+## ✅ Final Status
+* All feature tests pass:
+   <img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/b428f28c-69ae-496f-a92b-5bb8f0fa8d86" />
+   
+Tests:  15 passed
+Time:   <your-time>
+Developed & maintained by Raja Aqeel Zafar
