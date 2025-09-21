@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Merchant;
+use App\Models\Order;
 use App\Services\MerchantService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -23,5 +24,29 @@ class MerchantController extends Controller
     public function orderStats(Request $request): JsonResponse
     {
         // TODO: Complete this method
+
+        $merchant = auth()->user()->merchant;
+
+        $from = $request->date('from');
+        $to   = $request->date('to');
+
+        $orders = Order::query()
+            ->where('merchant_id', $merchant->id)
+            ->when($from, fn ($q) => $q->where('created_at', '>=', $from))
+            ->when($to, fn ($q) => $q->where('created_at', '<=', $to))
+            ->get();
+
+        $totalOrders = $orders->count();
+        $totalRevenue = $orders->sum('subtotal');
+        $commissionsOwed = $orders->whereNotNull('affiliate_id') ->where('payout_status', Order::STATUS_UNPAID)->sum('commission_owed');
+
+        $resultArray = [
+            'count'            => $totalOrders,
+            'revenue'          => $totalRevenue,
+            'commissions_owed' => $commissionsOwed
+        ];
+
+
+        return response()->json($resultArray);
     }
 }

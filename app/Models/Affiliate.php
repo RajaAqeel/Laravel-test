@@ -15,11 +15,20 @@ class Affiliate extends Model
 {
     use HasFactory;
 
+    // protected $fillable = [
+    //     'user_id',
+    //     'merchant_id',
+    //     'commission_rate',
+    //     'discount_code'
+    // ];
+
     protected $fillable = [
         'user_id',
         'merchant_id',
+        'name',
+        'email',
         'commission_rate',
-        'discount_code'
+        'discount_code',
     ];
 
     public function merchant()

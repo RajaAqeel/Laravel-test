@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\Merchant;
+use App\Models\User;   // 👈 add this
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,9 +18,18 @@ class AffiliateFactory extends Factory
      */
     public function definition()
     {
+        // return [
+        //     'discount_code' => $this->faker->uuid(),
+        //     'commission_rate' => round(rand(1, 5) / 10, 1)
+        // ];
+
         return [
-            'discount_code' => $this->faker->uuid(),
-            'commission_rate' => round(rand(1, 5) / 10, 1)
+            'user_id'         => User::factory(),
+            'merchant_id'     => Merchant::factory(),
+            'name'            => $this->faker->name(),
+            'email'           => $this->faker->unique()->safeEmail(),
+            'commission_rate' => round(rand(1, 5) / 10, 1),
+            'discount_code'   => $this->faker->uuid(),
         ];
     }
 }

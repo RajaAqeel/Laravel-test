@@ -25,9 +25,10 @@ class Order extends Model
         'affiliate_id',
         'subtotal',
         'commission_owed',
+        'external_order_id',
+        'discount_code',
         'payout_status',
-        'customer_email',
-        'created_at'
+        'created_at',
     ];
 
     public function merchant()

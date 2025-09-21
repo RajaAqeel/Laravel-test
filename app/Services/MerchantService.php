@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use Illuminate\Support\Facades\Hash;
+
 use App\Jobs\PayoutOrderJob;
 use App\Models\Affiliate;
 use App\Models\Merchant;
@@ -21,6 +23,30 @@ class MerchantService
     public function register(array $data): Merchant
     {
         // TODO: Complete this method
+
+        if (User::where('email', $data['email'])->exists()) {
+            throw new MerchantCreateException('User with this email already registered as an merchant.');
+        }
+
+        $userArray = [
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => $data['api_key'],
+            'type'     => User::TYPE_MERCHANT,
+        ];
+
+        $user = User::create($userArray);
+
+        $merchantArray = [
+            'user_id'      => $user->id,
+            'display_name' => $data['name'],
+            'domain'       => $data['domain'],
+            'email'        => $data['email'],
+        ];
+
+        $merchant = Merchant::create($merchantArray);
+
+        return $merchant;
     }
 
     /**
@@ -32,6 +58,29 @@ class MerchantService
     public function updateMerchant(User $user, array $data)
     {
         // TODO: Complete this method
+
+        $userArray = [
+            'name'     => $data['name'],
+            'email'    => $data['email'],
+            'password' => $data['api_key'],
+        ];
+
+        // Update user
+        $user->update($userArray);
+
+        $merchant = $user->merchant; // According to one-to-one relationship between User and Merchant. If a user is a merchant, they must have a merchant record.
+        
+        if ($merchant) {
+
+            $merchantArray = [
+                'domain'       => $data['domain'],
+                'display_name' => $data['name'],
+                'email'        => $data['email'],
+            ];
+
+            // Update merchant
+            $merchant->update($merchantArray);
+        }
     }
 
     /**
@@ -44,6 +93,18 @@ class MerchantService
     public function findMerchantByEmail(string $email): ?Merchant
     {
         // TODO: Complete this method
+
+        // Find the user by email and type 'merchant'
+        $user = User::where('email', $email)->where('type', User::TYPE_MERCHANT)->first();
+
+        if ($user) {
+
+            // Returning associated merchant
+            return $user->merchant;
+        }
+
+        // If no user or merchant found, return null
+        return null;
     }
 
     /**
@@ -56,5 +117,14 @@ class MerchantService
     public function payout(Affiliate $affiliate)
     {
         // TODO: Complete this method
+
+        $orders = Order::where('affiliate_id', $affiliate->id)
+                    ->where('payout_status', Order::STATUS_UNPAID)
+                    ->get();
+
+        // Dispatching the payout job for each order
+        foreach ($orders as $order) {
+            PayoutOrderJob::dispatch($order);
+        }
     }
 }
